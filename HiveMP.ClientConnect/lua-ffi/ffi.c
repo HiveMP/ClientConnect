@@ -3332,3 +3332,9 @@ int luaopen_ffi(lua_State* L)
 
     return 1;
 }
+
+// 5.3 Fixes
+void lua_remove(lua_State *L, int idx) {
+	lua_rotate(L, (idx), -1);
+	lua_pop(L, 1);
+}

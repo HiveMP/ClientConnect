@@ -3,8 +3,19 @@ ffi.cdef[[
 bool SteamAPI_Init();
 int SteamAPI_GetHSteamUser();
 int SteamAPI_GetHSteamPipe();
-void* SteamInternal_CreateInterface(const char* ver);
-void* SteamAPI_ISteamClient_GetISteamFriends(void* instancePtr, int hSteamUser, int hSteamPipe, const char* pchVersion);
-const char* SteamAPI_ISteamFriends_GetPersonaName(void* instancePtr);
+intptr_t SteamInternal_CreateInterface(const char* ver);
+intptr_t SteamAPI_ISteamClient_GetISteamFriends(intptr_t instancePtr, int hSteamUser, int hSteamPipe, const char* pchVersion);
+const char* SteamAPI_ISteamFriends_GetPersonaName(intptr_t instancePtr);
+int SteamAPI_ISteamFriends_GetFriendCount(intptr_t instancePtr, int iFriendFlags);
+uint64_t SteamAPI_ISteamFriends_GetFriendByIndex(intptr_t instancePtr, int iFriend, int iFriendFlags);
+int SteamAPI_ISteamFriends_GetFriendRelationship(intptr_t instancePtr, uint64_t steamIDFriend);
+int SteamAPI_ISteamFriends_GetFriendPersonaState(intptr_t instancePtr, uint64_t steamIDFriend);
+const char* SteamAPI_ISteamFriends_GetFriendPersonaName(intptr_t instancePtr, uint64_t steamIDFriend);
 ]]
-return ffi.load("steam_api64")
+if ffi.arch == "x64" then
+	return ffi.load("steam_api64")
+elseif ffi.arch == "x86" then
+	return ffi.load("steam_api")
+else
+	return nil
+end

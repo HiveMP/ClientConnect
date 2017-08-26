@@ -446,3 +446,9 @@ void unpack_varargs_int(lua_State* L, int first, int last, int max, char* to);
 
 
 
+// 5.3 Fixes
+#ifdef lua_remove
+#undef lua_remove
+#endif
+
+void lua_remove(lua_State *L, int idx);

@@ -1,5 +1,6 @@
 #include "connect.impl.h"
 #include "lua/lua.hpp"
+#include "lua-ffi/ffi.h"
 #include <string>
 #include <map>
 
@@ -39,6 +40,12 @@ void _cci_init_if_needed()
     {
         _lua = luaL_newstate();
         luaL_openlibs(_lua);
+		lua_getglobal(_lua, "package");
+		lua_pushstring(_lua, "preload");
+		lua_gettable(_lua, -2);
+		lua_pushcclosure(_lua, luaopen_ffi, 0);
+		lua_setfield(_lua, -2, "ffi");
+		lua_settop(_lua, 0);
         DEFINE_LUA_FUNC(register_hotpatch);
     }
 }
@@ -92,9 +99,9 @@ const char* cci_call_hotpatch(const char* api_raw, const char* operation_raw, co
     if (lua_pcall(_lua, 3, 2, 0) != 0)
     {
         *statusCode_raw = 500;
-        return "{\"code\": 7002, \"message\": \"An internal error occurred while running hotpatch\", \"fields\": null}";
-        printf("error running function `f': %s", lua_tostring(_lua, -1));
+        printf("error: %s\n", lua_tostring(_lua, -1));
 		lua_pop(_lua, 1);
+		return "{\"code\": 7002, \"message\": \"An internal error occurred while running hotpatch\", \"fields\": null}";
     }
 
 	int isnum;
@@ -103,6 +110,7 @@ const char* cci_call_hotpatch(const char* api_raw, const char* operation_raw, co
 	if (!isnum || s == nullptr)
 	{
 		*statusCode_raw = 500;
+		lua_pop(_lua, 2);
 		return "{\"code\": 7002, \"message\": \"The hotpatch return value was not in an expected format\", \"fields\": null}";
 	}
 	else

@@ -1,4 +1,4 @@
-#include "connect.hpp"
+#include "connect.h"
 #include <stdio.h>
 #include <fstream>
 #include <sstream>
@@ -14,15 +14,15 @@ int main()
     cc_load(ptr, "file:test.lua");
 
     printf("checking if hotpatched\n");
-    if (cc_is_hotpatched("admin-session", "sessionPUT"))
+    if (cc_is_hotpatched("friends", "friendsGET"))
     {
         int statusCode;
-        const char* result = cc_call_hotpatch("admin-session", "sessionPUT", "", "{\"username\": \"test\", \"password\": \"test\"}", &statusCode);
+        const char* result = cc_call_hotpatch("friends", "friendsGET", "", "{\"username\": \"test\", \"password\": \"test\"}", &statusCode);
         printf("%i - %s\n", statusCode, result);
     }
     else
     {
-        printf("admin-session sessionPUT is not hotpatched!\n");
+        printf("friends friendsGET is not hotpatched!\n");
     }
 
     return 0;
