@@ -9,12 +9,14 @@ set (Perl_FOUND YES)
 set (PERL_EXECUTABLE "perl")
 
 # Tweak curl settings
-set (ENABLE_MANUAL OFF)
-set (HTTP_ONLY ON)
-set (CURL_STATICLIB OFF)
-set (BUILD_TESTING OFF)
+option(HTTP_ONLY "" ON)
+option(CURL_STATICLIB "" OFF)
+option(ENABLE_MANUAL "" OFF)
+SET(BUILD_TESTING OFF CACHE BOOL "Use some expat option")
+SET(BUILD_CURL_EXE OFF CACHE BOOL "Use some expat option")
+
 if(WIN32)
-  set (CMAKE_USE_WINSSL ON)
+  option(CMAKE_USE_WINSSL "" ON)
 endif()
 
 add_subdirectory(curl)

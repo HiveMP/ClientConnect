@@ -7,7 +7,11 @@ local didSteamInit = false
 
 local curl = require("cURL")
 
-ffi.cdef "unsigned int sleep(unsigned int seconds);"
+local clock = os.clock
+function sleep(n)  -- seconds
+  local t0 = clock()
+  while clock() - t0 <= n do end
+end
 
 print("TEST: test.lua started")
 
@@ -27,28 +31,31 @@ function init()
 	end
 end
 
-function make_hive_request(endpoint, path, api_key, querystring, body)
+function make_hive_request(endpoint, method, path, api_key, querystring, body)
 	local result = ""
 	local noRetry = true
 	local delay = 1
 	repeat
 		noRetry = true
+		print("making HTTP request...")
 		local c = curl.easy
 		{
 			url = endpoint .. path,
+			customrequest = method,
 			httpheader = {
-				"X-API-Key: " .. api_key
+				"X-API-Key: " .. api_key,
+				"Content-Length: " .. string.len(body),
+				"Accept: application/json",
 			},
 			readfunction = function()
-				return ""
+				return body
 			end,
 			debugfunction = function(d, l, a)
 			end,
 			writefunction = function(str)
 				result = json.decode(str)
 			end,
-			put = 1,
-			upload = 0,
+			upload = 0
 		}
 		c:perform()
 		code, _ = c:getinfo_response_code()
@@ -58,8 +65,9 @@ function make_hive_request(endpoint, path, api_key, querystring, body)
 		else
 			-- parse error to check for 6001
 			if result.code == 6001 then
+				print("got 6001 from server! sleeping for " .. delay .. " seconds!")
 				noRetry = false
-				ffi.C.sleep(delay)
+				sleep(delay)
 				delay = delay * 2
 			else
 				return false, {
@@ -81,6 +89,7 @@ function session_put_hotpatch(id, endpoint, api_key, parameters_json)
 
 	local success, session = make_hive_request(
 		endpoint,
+		"PUT",
 		"/v1/session-notfound",
 		api_key,
 		{},
@@ -96,6 +105,7 @@ function session_put_hotpatch(id, endpoint, api_key, parameters_json)
 
 	success, session = make_hive_request(
 		endpoint,
+		"PUT",
 		"/v1/session",
 		api_key,
 		{},
