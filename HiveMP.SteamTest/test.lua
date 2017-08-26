@@ -5,6 +5,12 @@ local steam = require("steam")
 local steamInst = {}
 local didSteamInit = false
 
+local curl = require("cURL")
+
+ffi.cdef "unsigned int sleep(unsigned int seconds);"
+
+print("TEST: test.lua started")
+
 function init()
 	if not didSteamInit then
 		if not steam.SteamAPI_Init() then return end
@@ -21,32 +27,115 @@ function init()
 	end
 end
 
-function friends_get_hotpatch(id, api_key, parameters_json)
+function make_hive_request(endpoint, path, api_key, querystring, body)
+	local result = ""
+	local noRetry = true
+	local delay = 1
+	repeat
+		noRetry = true
+		local c = curl.easy
+		{
+			url = endpoint .. path,
+			httpheader = {
+				"X-API-Key: " .. api_key
+			},
+			readfunction = function()
+				return ""
+			end,
+			debugfunction = function(d, l, a)
+			end,
+			writefunction = function(str)
+				result = json.decode(str)
+			end,
+			put = 1,
+			upload = 0,
+		}
+		c:perform()
+		code, _ = c:getinfo_response_code()
+		c:close()
+		if code >= 200 and code < 300 then
+			-- success
+		else
+			-- parse error to check for 6001
+			if result.code == 6001 then
+				noRetry = false
+				ffi.C.sleep(delay)
+				delay = delay * 2
+			else
+				return false, {
+					httpstatus = code,
+					code = result.code,
+					message = result.message,
+					fields = result.fields
+				}
+			end
+		end
+	until noRetry
+	return true, result
+end
+
+function session_put_hotpatch(id, endpoint, api_key, parameters_json)
 	local params = json.decode(parameters_json)
 
 	init()
-	if not didSteamInit then
-		return 404, json.encode({code = 7002, message = "Unable to use Steam APIs!", fields = nil })
+
+	local success, session = make_hive_request(
+		endpoint,
+		"/v1/session-notfound",
+		api_key,
+		{},
+		"")
+
+	if not success then
+		print("TEST PASS: Got failure when trying to access /v1/session-notfound")
+		print(json.encode(session))
+	else
+		print("TEST FAIL: Got success when trying to access /v1/session-notfound")
+		print(json.encode(session))
 	end
 
+	success, session = make_hive_request(
+		endpoint,
+		"/v1/session",
+		api_key,
+		{},
+		"")
+
+	if success then
+		print("TEST PASS: Got success when trying to access /v1/session")
+		print(json.encode(session))
+	else
+		print("TEST FAIL: Got failure when trying to access /v1/session")
+		print(json.encode(session))
+	end
+	
 	local friends = {}
-	local friendCount = steam.SteamAPI_ISteamFriends_GetFriendCount(steamInst.friends, 0xFFFF)
-	for i = 0, friendCount do
-		local friendId = steam.SteamAPI_ISteamFriends_GetFriendByIndex(steamInst.friends, i, 0xFFFF)
-		local friendRel = steam.SteamAPI_ISteamFriends_GetFriendRelationship(steamInst.friends, friendId)
-		local friendState = steam.SteamAPI_ISteamFriends_GetFriendPersonaState(steamInst.friends, friendId)
-		local friendName = ffi.string(steam.SteamAPI_ISteamFriends_GetFriendPersonaName(steamInst.friends, friendId))
+	if didSteamInit then
+		local friendCount = steam.SteamAPI_ISteamFriends_GetFriendCount(steamInst.friends, 0xFFFF)
+		for i = 0, friendCount do
+			local friendId = steam.SteamAPI_ISteamFriends_GetFriendByIndex(steamInst.friends, i, 0xFFFF)
+			local friendRel = steam.SteamAPI_ISteamFriends_GetFriendRelationship(steamInst.friends, friendId)
+			local friendState = steam.SteamAPI_ISteamFriends_GetFriendPersonaState(steamInst.friends, friendId)
+			local friendName = ffi.string(steam.SteamAPI_ISteamFriends_GetFriendPersonaName(steamInst.friends, friendId))
 
-		table.insert(friends, {
-			id = tostring(friendId),
-			relationship = tonumber(friendRel),
-			state = tonumber(friendState),
-			name = tostring(friendName)
-		})
+			table.insert(friends, {
+				id = tostring(friendId),
+				relationship = tonumber(friendRel),
+				state = tonumber(friendState),
+				name = tostring(friendName)
+			})
+		end
 	end
 
-	return 200, json.encode(friends)
+	-- Append friend information to response
+	session.friends = friends
+
+	if success then
+		return 200, json.encode(session)
+	else
+		return success.httpstatus, json.encode(session)
+	end
 end
 
--- Hotpatch REST calls to GET https://friends-api.hivemp.com/v1/friends to our Lua method instead
-register_hotpatch("friends:friendsGET", "friends_get_hotpatch")
+-- Hotpatch REST calls
+register_hotpatch("temp-session:sessionPUT", "session_put_hotpatch")

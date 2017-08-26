@@ -14,9 +14,11 @@ extern "C"
 #define DLLIMPORT
 #endif
 
-	DLLIMPORT void cc_load(const char* lua, const char* context);
+	DLLIMPORT void cc_map_chunk(const char* name, void* data, int len);
+	DLLIMPORT void cc_free_chunk(const char* name);
+	DLLIMPORT void cc_run(const char* name);
 	DLLIMPORT bool cc_is_hotpatched(const char* api, const char* operation);
-	DLLIMPORT const char* cc_call_hotpatch(const char* api, const char* operation, const char* apiKey, const char* parametersAsJson, int* statusCode);
+	DLLIMPORT const char* cc_call_hotpatch(const char* api, const char* operation, const char* endpoint, const char* apiKey, const char* parametersAsJson, int* statusCode);
 
 #ifdef __cplusplus
 }

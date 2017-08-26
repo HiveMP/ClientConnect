@@ -1,15 +1,26 @@
 #include "connect.impl.h"
+#include "vfiles.h"
 #include "lua/lua.hpp"
 #include "lua-ffi/ffi.h"
+#include "lua-curl/lcurl.h"
 #include <string>
 #include <map>
 
 #define DEFINE_LUA_FUNC(name) \
     lua_pushcfunction(_lua, _ccl_ ## name); \
     lua_setglobal(_lua, #name);
+#define DEFINE_LUA_LIB(name) \
+	lua_getglobal(_lua, "package"); \
+	lua_pushstring(_lua, "preload"); \
+	lua_gettable(_lua, -2); \
+	lua_pushcclosure(_lua, luaopen_ ## name, 0); \
+	lua_setfield(_lua, -2, #name); \
+	lua_settop(_lua, 0);
 
 std::map<std::string, std::string>* _hotpatches = nullptr;
 lua_State* _lua = nullptr;
+
+
 
 int _ccl_register_hotpatch(lua_State *L)
 {
@@ -36,27 +47,59 @@ void _cci_init_if_needed()
         _hotpatches = new std::map<std::string, std::string>();
     }
 
+	vfile_init_if_needed();
+
     if (_lua == nullptr)
     {
         _lua = luaL_newstate();
         luaL_openlibs(_lua);
-		lua_getglobal(_lua, "package");
-		lua_pushstring(_lua, "preload");
-		lua_gettable(_lua, -2);
-		lua_pushcclosure(_lua, luaopen_ffi, 0);
-		lua_setfield(_lua, -2, "ffi");
-		lua_settop(_lua, 0);
+		DEFINE_LUA_LIB(ffi);
+		DEFINE_LUA_LIB(lcurl);
+		DEFINE_LUA_LIB(lcurl_safe);
         DEFINE_LUA_FUNC(register_hotpatch);
+		vfile_setup_searchers(_lua);
     }
 }
 
-void cci_load(const char* lua_raw, const char* context)
+void cci_map_chunk(const char* name_raw, void* data, int len)
 {
-    _cci_init_if_needed();
+	_cci_init_if_needed();
 
-	int error = luaL_loadbuffer(_lua, lua_raw, strlen(lua_raw), context) ||
-		lua_pcall(_lua, 0, 0, 0);
-	if (error) {
+	vfile_set(name_raw, data, len);
+}
+
+void cci_free_chunk(const char* name_raw)
+{
+	_cci_init_if_needed();
+
+	vfile_unset(name_raw);
+}
+
+void cci_run(const char* name_raw)
+{
+	std::string name(name_raw);
+
+	_cci_init_if_needed();
+
+	if (!vfile_exists(name_raw))
+	{
+		fprintf(stderr, "no such chunk loaded: %s", name);
+		return;
+	}
+
+	void* chunk;
+	int size;
+	vfile_get(name_raw, &chunk, &size);
+	int error = luaL_loadbuffer(_lua, (const char*)chunk, size, name.c_str());
+	if (error)
+	{
+		fprintf(stderr, "%s", lua_tostring(_lua, -1));
+		lua_pop(_lua, 1);  /* pop error message from the stack */
+	}
+
+	error = lua_pcall(_lua, 0, 0, 0, 0);
+	if (error)
+	{
 		fprintf(stderr, "%s", lua_tostring(_lua, -1));
 		lua_pop(_lua, 1);  /* pop error message from the stack */
 	}
@@ -74,7 +117,42 @@ bool cci_is_hotpatched(const char* api_raw, const char* operation_raw)
     return _hotpatches->find(id) != _hotpatches->end();
 }
 
-const char* cci_call_hotpatch(const char* api_raw, const char* operation_raw, const char* apiKey_raw, const char* parametersAsJson_raw, int* statusCode_raw)
+static void stackDump(lua_State *L) {
+	int i;
+	int top = lua_gettop(L);
+	for (i = 1; i <= top; i++) {  /* repeat for each level */
+		int t = lua_type(L, i);
+		switch (t) {
+
+		case LUA_TSTRING:  /* strings */
+			printf("`%s'\n", lua_tostring(L, i));
+			break;
+
+		case LUA_TBOOLEAN:  /* booleans */
+			printf(lua_toboolean(L, i) ? "true\n" : "false\n");
+			break;
+
+		case LUA_TNUMBER:  /* numbers */
+			printf("%g\n", lua_tonumber(L, i));
+			break;
+
+		default:  /* other values */
+			printf("%s\n", lua_typename(L, t));
+			break;
+
+		}
+		//printf("  ");  /* put a separator */
+	}
+	printf("\n");  /* end the listing */
+}
+
+const char* cci_call_hotpatch(
+	const char* api_raw, 
+	const char* operation_raw, 
+	const char* endpoint_raw, 
+	const char* apiKey_raw, 
+	const char* parametersAsJson_raw, 
+	int* statusCode_raw)
 {
     _cci_init_if_needed();
 
@@ -93,10 +171,11 @@ const char* cci_call_hotpatch(const char* api_raw, const char* operation_raw, co
 
     lua_getglobal(_lua, lua_func_name.c_str());
     lua_pushstring(_lua, id.c_str());
+	lua_pushstring(_lua, endpoint_raw);
     lua_pushstring(_lua, apiKey_raw);
     lua_pushstring(_lua, parametersAsJson_raw);
 
-    if (lua_pcall(_lua, 3, 2, 0) != 0)
+    if (lua_pcall(_lua, 4, 2, 0) != 0)
     {
         *statusCode_raw = 500;
         printf("error: %s\n", lua_tostring(_lua, -1));

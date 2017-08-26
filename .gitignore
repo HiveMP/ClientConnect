@@ -2,3 +2,4 @@
 /.vscode/.cmaketools.json
 /.vs/
 /HiveMP.SteamTest/steam_api64.dll
+/HiveMP.SteamTest/steam_api.dll
