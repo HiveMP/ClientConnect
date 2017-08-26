@@ -43,9 +43,16 @@ void _cci_init_if_needed()
     }
 }
 
-void cci_load(const char* lua_raw)
+void cci_load(const char* lua_raw, const char* context)
 {
     _cci_init_if_needed();
+
+	int error = luaL_loadbuffer(_lua, lua_raw, strlen(lua_raw), context) ||
+		lua_pcall(_lua, 0, 0, 0);
+	if (error) {
+		fprintf(stderr, "%s", lua_tostring(_lua, -1));
+		lua_pop(_lua, 1);  /* pop error message from the stack */
+	}
 }
 
 bool cci_is_hotpatched(const char* api_raw, const char* operation_raw)
@@ -86,10 +93,23 @@ const char* cci_call_hotpatch(const char* api_raw, const char* operation_raw, co
     {
         *statusCode_raw = 500;
         return "{\"code\": 7002, \"message\": \"An internal error occurred while running hotpatch\", \"fields\": null}";
-        //error(L, "error running function `f': %s",
-        //    lua_tostring(L, -1));
+        printf("error running function `f': %s", lua_tostring(_lua, -1));
+		lua_pop(_lua, 1);
     }
 
-    *statusCode_raw = (int)luaL_checkinteger(_lua, 1);
-    return luaL_checkstring(_lua, 2);
+	int isnum;
+	lua_Integer d = lua_tointegerx(_lua, 1, &isnum);
+	const char* s = lua_tostring(_lua, 2);
+	if (!isnum || s == nullptr)
+	{
+		*statusCode_raw = 500;
+		return "{\"code\": 7002, \"message\": \"The hotpatch return value was not in an expected format\", \"fields\": null}";
+	}
+	else
+	{
+		*statusCode_raw = (int)d;
+	}
+
+	lua_pop(_lua, 2);
+	return s;
 }

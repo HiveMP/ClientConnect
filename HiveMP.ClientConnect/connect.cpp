@@ -9,9 +9,9 @@
 
 extern "C"
 {
-    DLLEXPORT void cc_load(const char* lua)
+    DLLEXPORT void cc_load(const char* lua, const char* context)
     {
-        cci_load(lua);
+        cci_load(lua, context);
     }
 
     DLLEXPORT bool cc_is_hotpatched(const char* api, const char* operation)

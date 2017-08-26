@@ -1,12 +1,17 @@
 #include "connect.hpp"
 #include <stdio.h>
+#include <fstream>
+#include <sstream>
 
 int main()
 {
-    printf("test started\n");
+	std::ostringstream sstream;
+	std::ifstream fs("test.lua");
+	sstream << fs.rdbuf();
+	const std::string str(sstream.str());
+	const char* ptr = str.c_str();
 
-    printf("loading Lua code\n");
-    cc_load("print(\"test\");");
+    cc_load(ptr, "file:test.lua");
 
     printf("checking if hotpatched\n");
     if (cc_is_hotpatched("admin-session", "sessionPUT"))

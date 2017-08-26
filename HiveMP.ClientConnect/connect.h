@@ -9,7 +9,7 @@
 #define DLLIMPORT
 #endif
 
-DLLIMPORT void cc_load(const char* lua);
+DLLIMPORT void cc_load(const char* lua, const char* context);
 DLLIMPORT bool cc_is_hotpatched(const char* api, const char* operation);
 DLLIMPORT const char* cc_call_hotpatch(const char* api, const char* operation, const char* apiKey, const char* parametersAsJson, int* statusCode);
 #endif
