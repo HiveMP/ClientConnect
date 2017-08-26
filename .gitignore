@@ -3,3 +3,6 @@
 /.vs/
 /HiveMP.SteamTest/steam_api64.dll
 /HiveMP.SteamTest/steam_api.dll
+/build32/
+/build64/
+/vswhere.exe
