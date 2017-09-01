@@ -5,5 +5,6 @@ stage("Win32 / Win64") {
         bat 'powershell.exe .\\HiveMP.SteamTest\\CopySteamApiDlls.ps1'
         bat 'powershell.exe .\\Build.ps1'
         stash includes: 'dist/**', name: 'windows'
+        archiveArtifacts 'dist/**'
     }
 }
