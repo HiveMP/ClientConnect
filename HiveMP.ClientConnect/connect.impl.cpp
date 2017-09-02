@@ -146,57 +146,76 @@ static void stackDump(lua_State *L) {
 	printf("\n");  /* end the listing */
 }
 
-const char* cci_call_hotpatch(
+char* cci_call_hotpatch(
 	const char* api_raw, 
 	const char* operation_raw, 
 	const char* endpoint_raw, 
 	const char* apiKey_raw, 
 	const char* parametersAsJson_raw, 
-	int* statusCode_raw)
+	int32_t* statusCode_raw)
 {
     _cci_init_if_needed();
+
+	const char* result_to_copy = nullptr;
+	bool pop_lua_after_copy = false;
 
     if (!cci_is_hotpatched(api_raw, operation_raw))
     {
         *statusCode_raw = 400;
-        return "{\"code\": 7001, \"message\": \"Request is not hotpatched, make a direct call to the servers\", \"fields\": null}";
+        result_to_copy = "{\"code\": 7001, \"message\": \"Request is not hotpatched, make a direct call to the servers\", \"fields\": null}";
     }
-
-    std::string api(api_raw);
-    std::string operation(operation_raw);
-
-    auto id = api + ":" + operation;
-
-    auto lua_func_name = (*_hotpatches)[id];
-
-    lua_getglobal(_lua, lua_func_name.c_str());
-    lua_pushstring(_lua, id.c_str());
-	lua_pushstring(_lua, endpoint_raw);
-    lua_pushstring(_lua, apiKey_raw);
-    lua_pushstring(_lua, parametersAsJson_raw);
-
-    if (lua_pcall(_lua, 4, 2, 0) != 0)
-    {
-        *statusCode_raw = 500;
-        printf("error: %s\n", lua_tostring(_lua, -1));
-		lua_pop(_lua, 1);
-		return "{\"code\": 7002, \"message\": \"An internal error occurred while running hotpatch\", \"fields\": null}";
-    }
-
-	int isnum;
-	lua_Integer d = lua_tointegerx(_lua, 1, &isnum);
-	const char* s = lua_tostring(_lua, 2);
-	if (!isnum || s == nullptr)
-	{
-		*statusCode_raw = 500;
-		lua_pop(_lua, 2);
-		return "{\"code\": 7002, \"message\": \"The hotpatch return value was not in an expected format\", \"fields\": null}";
-	}
 	else
 	{
-		*statusCode_raw = (int)d;
+		std::string api(api_raw);
+		std::string operation(operation_raw);
+
+		auto id = api + ":" + operation;
+
+		auto lua_func_name = (*_hotpatches)[id];
+
+		lua_getglobal(_lua, lua_func_name.c_str());
+		lua_pushstring(_lua, id.c_str());
+		lua_pushstring(_lua, endpoint_raw);
+		lua_pushstring(_lua, apiKey_raw);
+		lua_pushstring(_lua, parametersAsJson_raw);
+
+		if (lua_pcall(_lua, 4, 2, 0) != 0)
+		{
+			*statusCode_raw = 500;
+			printf("error: %s\n", lua_tostring(_lua, -1));
+			lua_pop(_lua, 1);
+			result_to_copy = "{\"code\": 7002, \"message\": \"An internal error occurred while running hotpatch\", \"fields\": null}";
+		}
+		else
+		{
+			int isnum;
+			lua_Integer d = lua_tointegerx(_lua, 1, &isnum);
+			const char* s = lua_tostring(_lua, 2);
+			if (!isnum || s == nullptr)
+			{
+				*statusCode_raw = 500;
+				lua_pop(_lua, 2);
+				result_to_copy = "{\"code\": 7002, \"message\": \"The hotpatch return value was not in an expected format\", \"fields\": null}";
+			}
+			else
+			{
+				*statusCode_raw = (int)d;
+				result_to_copy = s;
+				pop_lua_after_copy = true;
+			}
+		}
 	}
 
-	lua_pop(_lua, 2);
-	return s;
+	auto len = strlen(result_to_copy) + 1;
+	char* result = (char*)malloc(len);
+	memcpy(result, result_to_copy, len);
+	result[len - 1] = 0;
+
+	if (pop_lua_after_copy)
+	{
+		lua_pop(_lua, 2);
+	}
+
+	// Caller must free after usage.
+	return result;
 }
