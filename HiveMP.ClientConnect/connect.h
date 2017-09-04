@@ -7,6 +7,7 @@ extern "C"
 #endif
 
 #include <stdbool.h>
+#include <stdint.h>
 
 #if WIN32
 #define DLLIMPORT __declspec(dllimport)
@@ -16,9 +17,11 @@ extern "C"
 
 	DLLIMPORT void cc_map_chunk(const char* name, void* data, int len);
 	DLLIMPORT void cc_free_chunk(const char* name);
-	DLLIMPORT void cc_run(const char* name);
+	DLLIMPORT void cc_set_startup(const char* name);
+	DLLIMPORT void cc_set_config(void* data, int len);
 	DLLIMPORT bool cc_is_hotpatched(const char* api, const char* operation);
-	DLLIMPORT const char* cc_call_hotpatch(const char* api, const char* operation, const char* endpoint, const char* apiKey, const char* parametersAsJson, int* statusCode);
+	DLLIMPORT char* cc_call_hotpatch(const char* api, const char* operation, const char* endpoint, const char* apiKey, const char* parametersAsJson, int32_t* statusCode);
+	DLLIMPORT void cc_free_string(char* ptr);
 
 #ifdef __cplusplus
 }

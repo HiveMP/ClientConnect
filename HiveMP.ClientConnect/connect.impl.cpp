@@ -75,7 +75,7 @@ void cci_free_chunk(const char* name_raw)
 	vfile_unset(name_raw);
 }
 
-void cci_run(const char* name_raw)
+void cci_set_startup(const char* name_raw)
 {
 	std::string name(name_raw);
 
@@ -91,6 +91,23 @@ void cci_run(const char* name_raw)
 	int size;
 	vfile_get(name_raw, &chunk, &size);
 	int error = luaL_loadbuffer(_lua, (const char*)chunk, size, name.c_str());
+	if (error)
+	{
+		fprintf(stderr, "%s", lua_tostring(_lua, -1));
+		lua_pop(_lua, 1);  /* pop error message from the stack */
+	}
+
+	error = lua_pcall(_lua, 0, 0, 0, 0);
+	if (error)
+	{
+		fprintf(stderr, "%s", lua_tostring(_lua, -1));
+		lua_pop(_lua, 1);  /* pop error message from the stack */
+	}
+}
+
+void cci_set_config(void* data, int len)
+{
+	int error = luaL_loadbuffer(_lua, (const char*)data, len, "config");
 	if (error)
 	{
 		fprintf(stderr, "%s", lua_tostring(_lua, -1));

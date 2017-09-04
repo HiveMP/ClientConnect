@@ -27,7 +27,7 @@ int main()
 	MAP_CHUNK("test.lua");
 	
 	// Run the test.lua chunk to set up hot patches
-	cc_run("test.lua");
+	cc_set_startup("test.lua");
 
     printf("checking if hotpatched\n");
     if (cc_is_hotpatched("temp-session", "sessionPUT"))

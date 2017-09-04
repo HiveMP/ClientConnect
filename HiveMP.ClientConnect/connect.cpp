@@ -21,9 +21,14 @@ extern "C"
 		cci_free_chunk(name);
 	}
 
-	DLLEXPORT void cc_run(const char* name)
+	DLLEXPORT void cc_set_startup(const char* name)
 	{
-		cci_run(name);
+		cci_set_startup(name);
+	}
+
+	DLLEXPORT void cc_set_config(void* data, int len)
+	{
+		cci_set_config(data, len);
 	}
 
     DLLEXPORT bool cc_is_hotpatched(const char* api, const char* operation)

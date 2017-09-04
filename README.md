@@ -8,7 +8,7 @@ For example, say you want to record a player's highscore. With Client Connect, t
 
 The Client Connect SDK is exposed as a very simple C API, which needs to be used by the language or engine specific SDK that is being used for HiveMP integration.
 
-When your SDK or integration first starts up, it should make a call to the Client Connect API at https://client-connect-api.hivemp.com/v1/files/core, which will return a list of core files to download, their SHA1 hashes and corresponding URLs, like so:
+When your SDK or integration first starts up, it should make a call to the Client Connect API at `https://client-connect-api.hivemp.com/v1/files` with an empty API key (`X-API-Key;` header), which will return a list of core files to download, their SHA1 hashes and corresponding URLs, like so:
 
 ```
 {
@@ -39,13 +39,13 @@ When your SDK or integration first starts up, it should make a call to the Clien
 }
 ```
 
-With this list, your SDK should then check if it already has the given file in some user-level cache (check if it exists, and check it's hash). If you don't already have it, download it from the specific URL. For any file not listed, you should delete it or obsolete it so that it won't be loaded in the future.
+With this list, your SDK should then check if it already has the given file in some user-level cache (check if it exists, and check it's hash). If you don't already have it, download it from the specific URL. For any file not listed, you should delete it or obsolete it so that it won't be loaded in the future. When fetching files, you should add the `X-API-Key;` header to the request in case the file is being served directly through HiveMP's API.
 
 If the user is offline, use the last result you fetched when the user was online (i.e. you should cache the result of the API call and if you can't make the API call, fallback to the last result).
 
 Once you have this list of files, call the `cc_map_chunk(name, data, len)` method with the name of the file (as provided by the API), the raw file data as binary, and the length of the read data.
 
-With all of the files loaded, you should then call `cc_run("init.lua")` **only if init.lua was in the list of core files**.
+With all of the files loaded, you should then call `cc_set_startup("init.lua")` **only if init.lua was in the list of core files**. After you have called this function, you should then make an initial call to `https://client-connect-api.hivemp.com/v1/config?platformId={platformId}` with an empty API key (`X-API-Key;` header), and pass the result to `cc_set_config("... the response content...")`.
 
 When you are surfacing HiveMP API calls to the developer, you should call `cc_is_hotpatched(api, operation)` to find out if the operation has been hotpatched by Client Connect. If it has, you need to call `cc_call_hotpatch(api, operation, endpoint, apiKey, parametersAsJson, statusCode)` **instead of** performing a HTTPS call in your SDK.
 
@@ -110,23 +110,21 @@ struct TempSessionWithSecrets(const char* apiKey)
 
 You should use this pattern for **every API call you surface in your SDK that makes a request to the HiveMP servers**. The effect should be that using any HiveMP API call through your SDK can be transparently handled by Client Connect instead of making a web request.
 
-Once you have a user or temporary session, you should perform the same behaviour as SDK startup, but make a call to https://client-connect-api.hivemp.com/v1/files/user using the session API key that you were given. Files list in this result should override or be in addition to the core files (i.e. just call `cc_map_chunk` again). Files not in this list should be ignored (i.e. don't go deleting core files just because they aren't listed in this result).
+Once you have a user or temporary session, you should make a call to `https://client-connect-api.hivemp.com/v1/config?platformId={platformId}` using the session API key that you were given. With the result from this API method, you should then call `cc_set_config("... the response content...")`. This effectively adds per-user configuration to the global configuration already loaded when the SDK started up and you made a call to the config endpoint with an empty API key.
 
-You should only do this the first time you get a session. For example, if the developer creates multiple sessions with your SDK, you should only check the `files/user` endpoint once in the lifetime of the application.
-
-If and **only if** the `files/user` endpoint lists a `user.lua` file, you should then call `cc_run("user.lua")`. Don't call `cc_run` if the `user.lua` file is in the core files (it won't be because of how our API works, but for the purposes of implementation, don't call it in that scenario).
+You should do this each time you get a session. The HiveMP Client Connect SDK internally keeps track of which configuration settings were for which sessions, so it's entirely valid to have multiple user sessions in the one game process (e.g. for split screen).
 
 ## Integration Checklist
 
 Not sure you've implemented it all? Here's a handy checklist to go over when evaluating your implementation:
 
-- [ ] You make a call to `files/core` on SDK startup.
-- [ ] You make a call to `files/user` on first session create.
+- [ ] You make a call to `/v1/files` on SDK startup.
+- [ ] You make a call to `/v1/config` with an empty API key (`X-API-Key;`) on SDK startup.
 - [ ] You download and cache each file listed in the response.
-- [ ] You correctly handle offline scenarios for both SDK startup (`files/core`) and first session create (`files/user`).
-- [ ] You call `cc_map_chunk` only for files listed by the API calls `files/core` and `files/user`.
-- [ ] You call `cc_run("init.lua")` if `init.lua` is present in the `files/core` response.
-- [ ] You call `cc_run("user.lua")` if `user.lua` is present in the `files/user` response.
+- [ ] You correctly handle offline scenarios for both SDK files (`/v1/files`) and cached configuration (`/v1/config`).
+- [ ] You call `cc_map_chunk` only for files listed by the API call `/v1/files`.
+- [ ] You call `cc_set_startup("init.lua")` if `init.lua` is present in the `/v1/files` response.
+- [ ] You call `cc_set_config("...")` after each response from `/v1/config` (or from cache in the case of offline scenarios).
 
 ## C API Overview
 
@@ -142,9 +140,13 @@ Maps the path `name` to the virtual filesystem inside Client Connect, with the f
 
 Frees the virtual filesystem data associated with the path `name`.
 
-### void cc_run(const char* name)
+### void cc_set_startup(const char* name)
 
-Runs the specified Lua source or bytecode file mapped in the virtual filesystem at the path `name`.
+Sets the specified Lua source code or bytecode file as the startup code to run each time a new Lua state is created. When multiple requests are made to the Client Connect SDK on multiple threads, it creates a new Lua state for each concurrently running task as Lua is not thread-safe. These Lua states are pooled to prevent constant re-execution of the startup code.
+
+### void cc_set_config(void* data, int len)
+
+Sets the specified Lua source code or bytecode as the configuration for the HiveMP Client Connect SDK. When this method is called, it both caches the contents passed so that the creation of new Lua states will work when needed (see `cc_set_startup`) and it runs the config it all Lua states that are currently pooled (blocking until all existing concurrent requests are finished and the Lua states are available).
 
 ### bool cc_is_hotpatched(const char* api, const char* operation)
 
@@ -163,7 +165,7 @@ http://localhost:5001/_domain/pos-api.hivemp.com -> pos
 
 `operation` should be the operation as defined by the Swagger (OpenAPI) document that describes the API.
 
-### const char* cc_call_hotpatch(const char* api, const char* operation, const char* endpoint, const char* apiKey, const char* parametersAsJson, int* statusCode)
+### char* cc_call_hotpatch(const char* api, const char* operation, const char* endpoint, const char* apiKey, const char* parametersAsJson, int32_t* statusCode)
 
 Calls the hotpatch function and returns the response body, setting the status code into `statusCode`.
 
@@ -180,6 +182,10 @@ Calls the hotpatch function and returns the response body, setting the status co
 ```
 
 `statusCode` is an out parameter, where the HTTP status code is written to.
+
+### void cc_free_string(char* ptr)
+
+If the calling language does not support freeing unmanaged or native pointers, you can use this method to free the block of text returned by `cc_call_hotpatch` once you have copied it into the calling language's own string datatype.
 
 ## License
 
