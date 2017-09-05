@@ -5,6 +5,8 @@ set -x
 
 cd "$(dirname "$0")"
 
+sed -i -e 's/add_subdirectory\(docs\)/#add_subdirectory\(docs\)/g' curl/CMakeLists.txt
+
 if [ -f buildmac32 ]; then
     rm -Rf buildmac32
 fi
