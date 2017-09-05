@@ -21,9 +21,9 @@ xcodebuild -project HiveMP.ClientConnect.xcodeproj -configuration Release build
 
 cd "$(dirname "$0")"
 
-#if [ -d buildmac64 ]; then
-#    rm -Rf buildmac64
-#fi
+if [ -d buildmac64 ]; then
+    rm -Rf buildmac64
+fi
 if [ ! -d buildmac64 ]; then
     mkdir buildmac64
 fi
