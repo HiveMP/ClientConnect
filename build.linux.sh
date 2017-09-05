@@ -11,25 +11,26 @@ sed -i -e 's/add_subdirectory\(docs\)/#add_subdirectory\(docs\)/g' curl/CMakeLis
 
 # Builds are faster if we don't clear the CMake cache.
 SHASUM=$(shasum CMakeLists.txt | awk '{print $1}')
+VERSION=v2
 
-if [ ! -d buildlinux32_${SHASUM}_v1 ]; then
-    mkdir buildlinux32_${SHASUM}_v1
+if [ ! -d buildlinux32_${SHASUM}_${VERSION} ]; then
+    mkdir buildlinux32_${SHASUM}_${VERSION}
 fi
-cd buildlinux32_${SHASUM}_v1
+cd buildlinux32_${SHASUM}_${VERSION}
 cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Release -D CMAKE_TOOLCHAIN_FILE=../toolchain/Linux-i386.cmake ..
 make
 
 cd $ROOT
 
-if [ ! -d buildlinux64_${SHASUM}_v1 ]; then
-    mkdir buildlinux64_${SHASUM}_v1
+if [ ! -d buildlinux64_${SHASUM}_${VERSION} ]; then
+    mkdir buildlinux64_${SHASUM}_${VERSION}
 fi
-cd buildlinux64_${SHASUM}_v1
+cd buildlinux64_${SHASUM}_${VERSION}
 cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Release -D CMAKE_TOOLCHAIN_FILE=../toolchain/Linux-x86_64.cmake ..
 make
 
 echo "Testing 32-bit binaries..."
-cd $ROOT/buildlinux32_${SHASUM}_v1/Release
+cd $ROOT/buildlinux32_${SHASUM}_${VERSION}/Release
 ./HiveMP.SteamTest-exe | tee result.txt
 if [ "$(cat result.txt | grep -c "TEST PASS")" != "2" ]; then
     echo "Test failed!"
@@ -37,7 +38,7 @@ if [ "$(cat result.txt | grep -c "TEST PASS")" != "2" ]; then
 fi
 
 echo "Testing 64-bit binaries..."
-cd $ROOT/buildlinux64_${SHASUM}_v1/Release
+cd $ROOT/buildlinux64_${SHASUM}_${VERSION}/Release
 ./HiveMP.SteamTest-exe | tee result.txt
 if [ "$(cat result.txt | grep -c "TEST PASS")" != "2" ]; then
     echo "Test failed!"
@@ -52,5 +53,5 @@ if [ -d dist ]; then
 fi
 mkdir -pv dist/sdk/Linux32
 mkdir -pv dist/sdk/Linux64
-cp buildlinux32_${SHASUM}_v1/Release/*.so dist/sdk/Linux32/
-cp buildlinux64_${SHASUM}_v1/Release/*.so dist/sdk/Linux64/
+cp buildlinux32_${SHASUM}_${VERSION}/Release/*.so dist/sdk/Linux32/
+cp buildlinux64_${SHASUM}_${VERSION}/Release/*.so dist/sdk/Linux64/
