@@ -27,3 +27,14 @@ fi
 cd buildmac64_${SHASUM}_v1
 cmake -G "Xcode" -D CMAKE_OSX_ARCHITECTURES=x86_64 -D OPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include ..
 xcodebuild -project HiveMP.ClientConnect.xcodeproj -configuration Release build
+
+cd $ROOT
+
+echo "Creating distribution structure..."
+if [ -d dist ]; then
+    rm -Rf dist
+fi
+mkdir -pv dist/sdk/Mac32
+mkdir -pv dist/sdk/Mac64
+cp buildmac32_${SHASUM}_v1/Release/*.dylib dist/sdk/Mac32/
+cp buildmac64_${SHASUM}_v1/Release/*.dylib dist/sdk/Mac64/
