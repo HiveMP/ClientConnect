@@ -21,7 +21,7 @@ endif()
 if(APPLE)
   option(CMAKE_USE_DARWINSSL "enable Apple OS native SSL/TLS" ON)
   option(CMAKE_USE_OPENSSL "Use OpenSSL code. Experimental" OFF)
-  # You must pass -D CMAKE_CA_PATH=none on macOS since apparently we can't set it here.
+  SET(CURL_CA_PATH "none" CACHE STRING "Use some expat option")
 endif()
 
 add_subdirectory(curl)

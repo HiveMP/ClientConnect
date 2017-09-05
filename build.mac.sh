@@ -12,7 +12,7 @@ if [ -d buildmac32 ]; then
 fi
 mkdir buildmac32
 cd buildmac32
-cmake -G "Xcode" -D CMAKE_OSX_ARCHITECTURES=i386 -D OPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include -D CMAKE_CA_PATH=none ..
+cmake -G "Xcode" -D CMAKE_OSX_ARCHITECTURES=i386 -D OPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include ..
 xcodebuild -project HiveMP.ClientConnect.xcodeproj -configuration Release build
 
 cd "$(dirname "$0")"
@@ -22,5 +22,5 @@ if [ -d buildmac64 ]; then
 fi
 mkdir buildmac64
 cd buildmac64
-cmake -G "Xcode" -D CMAKE_OSX_ARCHITECTURES=x86_64 -D OPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include -D CMAKE_CA_PATH=none ..
+cmake -G "Xcode" -D CMAKE_OSX_ARCHITECTURES=x86_64 -D OPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include ..
 xcodebuild -project HiveMP.ClientConnect.xcodeproj -configuration Release build
