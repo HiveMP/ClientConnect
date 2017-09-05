@@ -33,7 +33,7 @@ cd $ROOT
 echo "Testing 32-bit binaries..."
 cd $ROOT/buildmac32_${SHASUM}_v1/Release
 ./HiveMP.SteamTest | tee result.txt
-if [ "$(cat result.txt | tr " " "\n" | grep -c "TEST PASS")" != "2" ]; then
+if [ "$(cat result.txt | grep -c "TEST PASS")" != "2" ]; then
     echo "Test failed!"
     exit 1
 fi
@@ -41,7 +41,7 @@ fi
 echo "Testing 64-bit binaries..."
 cd $ROOT/buildmac64_${SHASUM}_v1/Release
 ./HiveMP.SteamTest | tee result.txt
-if [ "$(cat result.txt | tr " " "\n" | grep -c "TEST PASS")" != "2" ]; then
+if [ "$(cat result.txt | grep -c "TEST PASS")" != "2" ]; then
     echo "Test failed!"
     exit 1
 fi
