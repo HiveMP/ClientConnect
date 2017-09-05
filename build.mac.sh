@@ -4,6 +4,8 @@ set -e
 set -x
 
 cd "$(dirname "$0")"
+ROOT=$(pwd)
+cd $ROOT
 
 sed -i -e 's/add_subdirectory\(docs\)/#add_subdirectory\(docs\)/g' curl/CMakeLists.txt
 
@@ -20,7 +22,7 @@ cd buildmac32_$SHASUM
 cmake -G "Xcode" -D CMAKE_OSX_ARCHITECTURES=i386 -D OPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include ..
 xcodebuild -project HiveMP.ClientConnect.xcodeproj -configuration Release build
 
-cd "$(dirname "$0")"
+cd $ROOT
 
 if [ -d buildmac64_$SHASUM ]; then
     rm -Rf buildmac64_$SHASUM
