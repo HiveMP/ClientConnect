@@ -7,7 +7,7 @@ cd "$(dirname "$0")"
 
 sed -i -e 's/add_subdirectory\(docs\)/#add_subdirectory\(docs\)/g' curl/CMakeLists.txt
 
-if [ -f buildmac32 ]; then
+if [ -d buildmac32 ]; then
     rm -Rf buildmac32
 fi
 mkdir buildmac32
@@ -17,7 +17,7 @@ xcodebuild -project HiveMP.ClientConnect.xcodeproj -configuration Release build
 
 cd "$(dirname "$0")"
 
-if [ -f buildmac64 ]; then
+if [ -d buildmac64 ]; then
     rm -Rf buildmac64
 fi
 mkdir buildmac64
