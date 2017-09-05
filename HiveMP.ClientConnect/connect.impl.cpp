@@ -3,6 +3,8 @@
 #include "lua/lua.hpp"
 #include "lua-ffi/ffi.h"
 #include "lua-curl/lcurl.h"
+#include <stdlib.h>
+#include <string.h>
 #include <string>
 #include <map>
 
@@ -83,7 +85,7 @@ void cci_set_startup(const char* name_raw)
 
 	if (!vfile_exists(name_raw))
 	{
-		fprintf(stderr, "no such chunk loaded: %s", name);
+		fprintf(stderr, "no such chunk loaded: %s", name.c_str());
 		return;
 	}
 
@@ -97,7 +99,7 @@ void cci_set_startup(const char* name_raw)
 		lua_pop(_lua, 1);  /* pop error message from the stack */
 	}
 
-	error = lua_pcall(_lua, 0, 0, 0, 0);
+	error = lua_pcall(_lua, 0, 0, 0);
 	if (error)
 	{
 		fprintf(stderr, "%s", lua_tostring(_lua, -1));
@@ -114,7 +116,7 @@ void cci_set_config(void* data, int len)
 		lua_pop(_lua, 1);  /* pop error message from the stack */
 	}
 
-	error = lua_pcall(_lua, 0, 0, 0, 0);
+	error = lua_pcall(_lua, 0, 0, 0);
 	if (error)
 	{
 		fprintf(stderr, "%s", lua_tostring(_lua, -1));

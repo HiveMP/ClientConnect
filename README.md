@@ -187,6 +187,29 @@ Calls the hotpatch function and returns the response body, setting the status co
 
 If the calling language does not support freeing unmanaged or native pointers, you can use this method to free the block of text returned by `cc_call_hotpatch` once you have copied it into the calling language's own string datatype.
 
+## Building the SDK from source
+
+Where possible, we recommend using the pre-built binaries for the Client Connect SDK. These binaries are already compiled for all supported platforms.
+
+### Windows
+
+Make sure you have CMake and Visual Studio 2017 with C++ support installed, then run `.\Build.ps1`. You will need to have a 64-bit computer.
+
+### macOS
+
+Make sure CMake, XCode and OpenSSL are installed. XCode you can get from the Mac App Store, while CMake and OpenSSL can be installed via Homebrew:
+
+```
+brew install cmake
+brew install openssl
+```
+
+Then generate XCode projects with:
+
+```
+cmake -G "Xcode" -D OPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include <path>
+```
+
 ## License
 
 ```
