@@ -18,15 +18,15 @@ if ffi.os == "Linux" then
     elseif ffi.arch == "x86" then
         return ffi.load("linux32/libsteam_api.so")
     else
-        return nil
+        return "none"
     end
 elseif ffi.os == "OSX" then
     if ffi.arch == "x64" then
-        return nil
+        return "none"
     elseif ffi.arch == "x86" then
         return ffi.load("libsteam_api.dylib")
     else
-        return nil
+        return "none"
     end
 elseif ffi.os == "Windows" then
     if ffi.arch == "x64" then
@@ -34,6 +34,6 @@ elseif ffi.os == "Windows" then
     elseif ffi.arch == "x86" then
         return ffi.load("steam_api")
     else
-        return nil
+        return "none"
     end
 end

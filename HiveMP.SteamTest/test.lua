@@ -17,7 +17,7 @@ print("TEST: test.lua started")
 
 function init()
 	if not didSteamInit then
-		if steam ~= nil then
+		if steam ~= "none" then
 			if not steam.SteamAPI_Init() then return end
 			local user = steam.SteamAPI_GetHSteamUser()
 			if user == nil then return end
@@ -123,7 +123,7 @@ function session_put_hotpatch(id, endpoint, api_key, parameters_json)
 	
 	local friends = {}
 	if didSteamInit then
-		if steam ~= nil then
+		if steam ~= "none" then
 			local friendCount = steam.SteamAPI_ISteamFriends_GetFriendCount(steamInst.friends, 0xFFFF)
 			for i = 0, friendCount do
 				local friendId = steam.SteamAPI_ISteamFriends_GetFriendByIndex(steamInst.friends, i, 0xFFFF)
