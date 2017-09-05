@@ -12,6 +12,10 @@ configure_file(json.lua ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SUBDIR}json.lua COPY
 configure_file(test.lua ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SUBDIR}test.lua COPYONLY)
 configure_file(steam.lua ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SUBDIR}steam.lua COPYONLY)
 configure_file(steam_appid.txt ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SUBDIR}steam_appid.txt COPYONLY)
+configure_file(../HiveMP.ClientConnect/lua-curl/lua/cURL.lua ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SUBDIR}cURL.lua COPYONLY)
+configure_file(../HiveMP.ClientConnect/lua-curl/lua/cURL/utils.lua ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SUBDIR}cURL/utils.lua COPYONLY)
+configure_file(../HiveMP.ClientConnect/lua-curl/lua/cURL/safe.lua ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SUBDIR}cURL/safe.lua COPYONLY)
+configure_file(../HiveMP.ClientConnect/lua-curl/lua/cURL/impl/cURL.lua ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SUBDIR}cURL/impl/cURL.lua COPYONLY)
 
 if(WIN32)
   configure_file(steam_api.dll ${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SUBDIR}steam_api.dll COPYONLY)
