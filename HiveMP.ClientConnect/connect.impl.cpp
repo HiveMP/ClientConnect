@@ -3,6 +3,8 @@
 #include "lua/lua.hpp"
 #include "lua-ffi/ffi.h"
 #include "lua-curl/lcurl.h"
+#include <stdlib.h>
+#include <string.h>
 #include <string>
 #include <map>
 

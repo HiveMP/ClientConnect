@@ -1,4 +1,6 @@
 #include "vfiles.h"
+#include <stdlib.h>
+#include <string.h>
 
 std::map<std::string, void*>* _vfiles = nullptr;
 std::map<std::string, int>* _vfiles_size = nullptr;
