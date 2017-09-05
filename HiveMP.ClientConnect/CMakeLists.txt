@@ -10,7 +10,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../curl/include)
 
 find_program(
 	LUA_EXE 
-	NAMES lua lua53 lua52 lua51
+	NAMES lua lua53 lua52 lua51 lua5.3 lua5.2 lua5.1
 	PATHS ${CMAKE_CURRENT_SOURCE_DIR}/../lua-win32)
 
 add_custom_command(
