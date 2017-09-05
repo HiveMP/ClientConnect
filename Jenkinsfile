@@ -17,6 +17,15 @@ stage("Build") {
                 stash includes: 'dist/**', name: 'mac'
                 archiveArtifacts 'dist/**'
             }
+        },
+        "Linux" : {
+            node('linux') {
+                checkout scm
+                sh 'git submodule update --init'
+                sh './build.linux.sh'
+                stash includes: 'dist/**', name: 'linux'
+                archiveArtifacts 'dist/**'
+            }
         }
     )
 }
