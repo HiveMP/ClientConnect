@@ -28,8 +28,6 @@ cd buildlinux64_${SHASUM}_v1
 cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Release -D CMAKE_TOOLCHAIN_FILE=../toolchain/Linux-x86_64.cmake ..
 make
 
-cd $ROOT
-
 echo "Testing 32-bit binaries..."
 cd $ROOT/buildlinux32_${SHASUM}_v1/Release
 ./HiveMP.SteamTest-exe | tee result.txt
@@ -45,6 +43,8 @@ if [ "$(cat result.txt | grep -c "TEST PASS")" != "2" ]; then
     echo "Test failed!"
     exit 1
 fi
+
+cd $ROOT
 
 echo "Creating distribution structure..."
 if [ -d dist ]; then

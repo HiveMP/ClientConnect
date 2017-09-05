@@ -28,8 +28,6 @@ cd buildmac64_${SHASUM}_v1
 cmake -G "Xcode" -D CMAKE_OSX_ARCHITECTURES=x86_64 -D OPENSSL_INCLUDE_DIR=/usr/local/opt/openssl/include ..
 xcodebuild -project HiveMP.ClientConnect.xcodeproj -configuration Release build
 
-cd $ROOT
-
 echo "Testing 32-bit binaries..."
 cd $ROOT/buildmac32_${SHASUM}_v1/Release
 ./HiveMP.SteamTest | tee result.txt
@@ -45,6 +43,8 @@ if [ "$(cat result.txt | grep -c "TEST PASS")" != "2" ]; then
     echo "Test failed!"
     exit 1
 fi
+
+cd $ROOT
 
 echo "Creating distribution structure..."
 if [ -d dist ]; then
