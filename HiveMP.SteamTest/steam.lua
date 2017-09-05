@@ -12,10 +12,14 @@ int SteamAPI_ISteamFriends_GetFriendRelationship(intptr_t instancePtr, uint64_t 
 int SteamAPI_ISteamFriends_GetFriendPersonaState(intptr_t instancePtr, uint64_t steamIDFriend);
 const char* SteamAPI_ISteamFriends_GetFriendPersonaName(intptr_t instancePtr, uint64_t steamIDFriend);
 ]]
-if ffi.arch == "x64" then
-	return ffi.load("steam_api64")
-elseif ffi.arch == "x86" then
-	return ffi.load("steam_api")
-else
-	return nil
+if ffi.os == "Linux" then
+    return nil
+elseif ffi.os == "Windows" then
+    if ffi.arch == "x64" then
+        return ffi.load("steam_api64")
+    elseif ffi.arch == "x86" then
+        return ffi.load("steam_api")
+    else
+        return nil
+    end
 end
