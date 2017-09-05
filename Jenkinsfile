@@ -12,8 +12,8 @@ stage("Build") {
         "macOS" : {
             node('mac') {
                 checkout scm
-                bat 'git submodule update --init'
-                bat './build.mac.sh'
+                sh 'git submodule update --init'
+                sh './build.mac.sh'
                 stash includes: 'dist/**', name: 'mac'
                 archiveArtifacts 'dist/**'
             }
