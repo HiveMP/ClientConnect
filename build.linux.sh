@@ -36,5 +36,5 @@ if [ -d dist ]; then
 fi
 mkdir -pv dist/sdk/Linux32
 mkdir -pv dist/sdk/Linux64
-cp buildlinux32_${SHASUM}_v1/Release/*.dylib dist/sdk/Linux32/
-cp buildlinux64_${SHASUM}_v1/Release/*.dylib dist/sdk/Linux64/
+cp buildlinux32_${SHASUM}_v1/Release/*.so dist/sdk/Linux32/
+cp buildlinux64_${SHASUM}_v1/Release/*.so dist/sdk/Linux64/
