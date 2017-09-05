@@ -17,16 +17,18 @@ print("TEST: test.lua started")
 
 function init()
 	if not didSteamInit then
-		if not steam.SteamAPI_Init() then return end
-		local user = steam.SteamAPI_GetHSteamUser()
-		if user == nil then return end
-		local pipe = steam.SteamAPI_GetHSteamPipe()
-		if pipe == nil then return end
-		local client = steam.SteamInternal_CreateInterface("SteamClient017")
-		if client == nil then return end
-		local friends = steam.SteamAPI_ISteamClient_GetISteamFriends(client, user, pipe, "SteamFriends015")
-		if friends == nil then return end
-		steamInst = { user = user, pipe = pipe, client = client, friends = friends }
+		if steam ~= nil then
+			if not steam.SteamAPI_Init() then return end
+			local user = steam.SteamAPI_GetHSteamUser()
+			if user == nil then return end
+			local pipe = steam.SteamAPI_GetHSteamPipe()
+			if pipe == nil then return end
+			local client = steam.SteamInternal_CreateInterface("SteamClient017")
+			if client == nil then return end
+			local friends = steam.SteamAPI_ISteamClient_GetISteamFriends(client, user, pipe, "SteamFriends015")
+			if friends == nil then return end
+			steamInst = { user = user, pipe = pipe, client = client, friends = friends }
+		end
 		didSteamInit = true
 	end
 end
@@ -121,19 +123,21 @@ function session_put_hotpatch(id, endpoint, api_key, parameters_json)
 	
 	local friends = {}
 	if didSteamInit then
-		local friendCount = steam.SteamAPI_ISteamFriends_GetFriendCount(steamInst.friends, 0xFFFF)
-		for i = 0, friendCount do
-			local friendId = steam.SteamAPI_ISteamFriends_GetFriendByIndex(steamInst.friends, i, 0xFFFF)
-			local friendRel = steam.SteamAPI_ISteamFriends_GetFriendRelationship(steamInst.friends, friendId)
-			local friendState = steam.SteamAPI_ISteamFriends_GetFriendPersonaState(steamInst.friends, friendId)
-			local friendName = ffi.string(steam.SteamAPI_ISteamFriends_GetFriendPersonaName(steamInst.friends, friendId))
+		if steam ~= nil then
+			local friendCount = steam.SteamAPI_ISteamFriends_GetFriendCount(steamInst.friends, 0xFFFF)
+			for i = 0, friendCount do
+				local friendId = steam.SteamAPI_ISteamFriends_GetFriendByIndex(steamInst.friends, i, 0xFFFF)
+				local friendRel = steam.SteamAPI_ISteamFriends_GetFriendRelationship(steamInst.friends, friendId)
+				local friendState = steam.SteamAPI_ISteamFriends_GetFriendPersonaState(steamInst.friends, friendId)
+				local friendName = ffi.string(steam.SteamAPI_ISteamFriends_GetFriendPersonaName(steamInst.friends, friendId))
 
-			table.insert(friends, {
-				id = tostring(friendId),
-				relationship = tonumber(friendRel),
-				state = tonumber(friendState),
-				name = tostring(friendName)
-			})
+				table.insert(friends, {
+					id = tostring(friendId),
+					relationship = tonumber(friendRel),
+					state = tonumber(friendState),
+					name = tostring(friendName)
+				})
+			end
 		end
 	end
 

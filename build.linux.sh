@@ -30,6 +30,22 @@ make
 
 cd $ROOT
 
+echo "Testing 32-bit binaries..."
+cd $ROOT/buildlinux32_${SHASUM}_v1/Release
+./HiveMP.SteamTest-exe | tee result.txt
+if [ "$(cat result.txt | tr " " "\n" | grep -c "TEST PASS")" != "2" ]; then
+    echo "Test failed!"
+    exit 1
+fi
+
+echo "Testing 64-bit binaries..."
+cd $ROOT/buildlinux64_${SHASUM}_v1/Release
+./HiveMP.SteamTest-exe | tee result.txt
+if [ "$(cat result.txt | tr " " "\n" | grep -c "TEST PASS")" != "2" ]; then
+    echo "Test failed!"
+    exit 1
+fi
+
 echo "Creating distribution structure..."
 if [ -d dist ]; then
     rm -Rf dist
