@@ -22,9 +22,13 @@ if ffi.os == "Linux" then
     end
 elseif ffi.os == "OSX" then
     if ffi.arch == "x64" then
-        return "none"
-    elseif ffi.arch == "x86" then
         return ffi.load("libsteam_api.dylib")
+    elseif ffi.arch == "x86" then
+        -- libsteam_api.dylib causes a segmentation fault on 32-bit macOS, so
+        -- we don't support this configuration. In the future, macOS is moving
+        -- to 64-bit only systems, and most games will be running in 64-bit
+        -- mode on any modern macOS anyway.
+        return "none"
     else
         return "none"
     end
