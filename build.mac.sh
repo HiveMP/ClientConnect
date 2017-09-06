@@ -53,5 +53,7 @@ if [ -d dist ]; then
 fi
 mkdir -pv dist/sdk/Mac32
 mkdir -pv dist/sdk/Mac64
-cp buildmac32_${SHASUM}_${VERSION}/Release/*.dylib dist/sdk/Mac32/
-cp buildmac64_${SHASUM}_${VERSION}/Release/*.dylib dist/sdk/Mac64/
+cp buildmac32_${SHASUM}_${VERSION}/Release/libcurl.dylib dist/sdk/Mac32/
+cp buildmac32_${SHASUM}_${VERSION}/Release/libHiveMP.ClientConnect.dylib dist/sdk/Mac32/
+cp buildmac64_${SHASUM}_${VERSION}/Release/libcurl.dylib dist/sdk/Mac64/
+cp buildmac64_${SHASUM}_${VERSION}/Release/libHiveMP.ClientConnect.dylib dist/sdk/Mac64/
