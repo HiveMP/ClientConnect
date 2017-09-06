@@ -62,15 +62,6 @@ finally
 Write-Output "Running test (32-bit version)"
 Push-Location .\build32\Release
 try {
-    if (!(Test-Path .\cURL)) { mkdir .\cURL }
-    if (!(Test-Path .\cURL\impl)) { mkdir .\cURL\impl }
-    Copy-Item -Force ..\steam_api.dll .\
-    Copy-Item -Force ..\steam_api64.dll .\
-    Copy-Item -Force ..\steam_appid.txt .\
-    Copy-Item -Force ..\*.lua .\
-    Copy-Item -Force ..\cURL\safe.lua .\cURL\safe.lua
-    Copy-Item -Force ..\cURL\utils.lua .\cURL\utils.lua
-    Copy-Item -Force ..\cURL\impl\cURL.lua .\cURL\impl\cURL.lua
     .\HiveMP.SteamTest.exe | Tee-Object -Variable "Result"
     Write-Output "--------------------------------"
     Write-Output $Result
@@ -92,15 +83,6 @@ finally
 Write-Output "Running test (64-bit version)"
 Push-Location .\build64\Release
 try {
-    if (!(Test-Path .\cURL)) { mkdir .\cURL }
-    if (!(Test-Path .\cURL\impl)) { mkdir .\cURL\impl }
-    Copy-Item -Force ..\steam_api.dll .\
-    Copy-Item -Force ..\steam_api64.dll .\
-    Copy-Item -Force ..\steam_appid.txt .\
-    Copy-Item -Force ..\*.lua .\
-    Copy-Item -Force ..\cURL\safe.lua .\cURL\safe.lua
-    Copy-Item -Force ..\cURL\utils.lua .\cURL\utils.lua
-    Copy-Item -Force ..\cURL\impl\cURL.lua .\cURL\impl\cURL.lua
     .\HiveMP.SteamTest.exe | Tee-Object -Variable "Result"
     Write-Output "--------------------------------"
     Write-Output $Result
