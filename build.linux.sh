@@ -13,18 +13,20 @@ sed -i -e 's/add_subdirectory\(docs\)/#add_subdirectory\(docs\)/g' curl/CMakeLis
 SHASUM=$(shasum CMakeLists.txt | awk '{print $1}')
 VERSION=v2
 
-if [ ! -d buildlinux32_${SHASUM}_${VERSION} ]; then
-    mkdir buildlinux32_${SHASUM}_${VERSION}
+if [ -d buildlinux32_${SHASUM}_${VERSION} ]; then
+    rm -Rf buildlinux32_${SHASUM}_${VERSION}
 fi
+mkdir buildlinux32_${SHASUM}_${VERSION}
 cd buildlinux32_${SHASUM}_${VERSION}
 cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Release -D CMAKE_TOOLCHAIN_FILE=../toolchain/Linux-i386.cmake ..
 make
 
 cd $ROOT
 
-if [ ! -d buildlinux64_${SHASUM}_${VERSION} ]; then
-    mkdir buildlinux64_${SHASUM}_${VERSION}
+if [ -d buildlinux64_${SHASUM}_${VERSION} ]; then
+    rm -Rf buildlinux64_${SHASUM}_${VERSION}
 fi
+mkdir buildlinux64_${SHASUM}_${VERSION}
 cd buildlinux64_${SHASUM}_${VERSION}
 cmake -G "Unix Makefiles" -D CMAKE_BUILD_TYPE=Release -D CMAKE_TOOLCHAIN_FILE=../toolchain/Linux-x86_64.cmake ..
 make
