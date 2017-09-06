@@ -29,7 +29,7 @@ stage("Build") {
         }
     )
 }
-//if (env.BRANCH_NAME == 'master') {
+if (env.BRANCH_NAME == 'master') {
   stage('Publish') {
     node('linux') {
       unstash 'windows'
@@ -54,7 +54,7 @@ echo "Deleting release from GitHub before creating a new one..."
 \$GITHUB_RELEASE delete --user HiveMP --repo HiveMP.ClientConnect --tag latest || true
 
 echo "Creating a new release on GitHub..."
-\$GITHUB_RELEASE release --user HiveMP --repo HiveMP.ClientConnect --tag latest --name "Latest Release (Build \$BUILD_ID)" --description "This is an automatic release created by the build server.  The `HiveMP.ClientConnect-SDK.tar.gz` package contains pre-built binaries for all supported platforms."
+\$GITHUB_RELEASE release --user HiveMP --repo HiveMP.ClientConnect --tag latest --name "Latest Release (Build \$BUILD_ID)" --description "This is an automatic release created by the build server.  The HiveMP.ClientConnect-SDK.tar.gz package contains pre-built binaries for all supported platforms."
 
 echo "Uploading SDK to GitHub..."
 \$GITHUB_RELEASE upload --user HiveMP --repo HiveMP.ClientConnect --tag latest --name HiveMP.ClientConnect-SDK.tar.gz --file HiveMP.ClientConnect-SDK.tar.gz
@@ -64,4 +64,4 @@ echo "Done!"
       }
     }
   }
-//}
+}
