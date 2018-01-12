@@ -33,7 +33,7 @@ int main()
     if (cc_is_hotpatched("temp-session", "sessionPUT"))
     {
         int statusCode;
-        const char* result = cc_call_hotpatch("temp-session", "sessionPUT", "https://dev-temp-session-api.hivemp.com", "test", "{}", &statusCode);
+        const char* result = cc_call_hotpatch("temp-session", "sessionPUT", "https://temp-session-api.hivemp.com", "b2124be3f61adf918b6bc7e1e1abdbf8", "{}", &statusCode);
         printf("%i - %s\n", statusCode, result);
     }
     else
