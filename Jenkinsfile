@@ -4,7 +4,7 @@ stage("Build") {
             node('windows') {
                 checkout poll: false, changelog: false, scm: scm
                 bat 'git submodule update --init'
-                bat 'powershell.exe .\\Build.ps1'
+                bat 'powershell.exe -ExecutionPolicy Bypass .\\Build.ps1'
                 stash includes: 'dist/**', name: 'windows'
                 archiveArtifacts 'dist/**'
             }
