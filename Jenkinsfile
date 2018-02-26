@@ -3,9 +3,7 @@ stage("Build") {
         "Windows" : {
             node('windows') {
                 checkout poll: false, changelog: false, scm: scm
-                bat 'git submodule foreach --recursive git clean -xfd'
-                bat 'git submodule foreach --recursive git reset --hard'
-                bat 'git submodule update --init --recursive'
+                bat 'git submodule update --init'
                 bat 'powershell.exe -ExecutionPolicy Bypass .\\Build.ps1'
                 stash includes: 'dist/**', name: 'windows'
                 archiveArtifacts 'dist/**'
